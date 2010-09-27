@@ -8,13 +8,15 @@ module ParamsOverCookie
       # cookie よりも params を先に見るパッチ
       def load_session_with_jpmobile(env)
         request = Rack::Request.new(env)
-        unless @cookie_only
-          sid = request.params[@key]
-        end
-        sid ||= request.cookies[@key]
+        stale_session_check! do
+          unless @cookie_only
+            sid = request.params[@key]
+          end
+          sid ||= current_session_id(env)
 
-        sid, session = get_session(env, sid)
-        [sid, session]
+          sid, session = get_session(env, sid)
+          [sid, session]
+        end
       end
       alias_method_chain :load_session, :jpmobile
     end
